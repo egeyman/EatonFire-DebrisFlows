@@ -7,166 +7,101 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-NEJFFC1P0V');
 </script>
 
-  <meta charset="utf-8" />
-  <title>Eaton-Fire-Lidar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<title>Eaton-Fire-Lidar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Latex-like font (Latin Modern or fallback) -->
-  <link href="https://fonts.googleapis.com/css2?family=Latin+Modern+Roman&display=swap" rel="stylesheet">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Latex-like font -->
+<link href="https://fonts.googleapis.com/css2?family=Latin+Modern+Roman&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Latin Modern Roman', 'Times New Roman', serif;
-      color: #333;
-      line-height: 1.6;
-      background: #fff;
-      height: 100vh;
-      overflow: hidden;
-    }
+<style>
+  body {
+    margin: 0;
+    font-family: 'Latin Modern Roman', 'Times New Roman', serif;
+    color: #333;
+    line-height: 1.6;
+    background: #fff;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #map { width: 100%; height: 100vh; position: relative; z-index: 1; }
 
-    #map {
-      width: 100%;
-      height: 100vh;
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* Sidebar container */
-    .sidebar {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 350px;
-      height: 100%;
-      padding: 20px;
-      padding-right: 3em; /* buffer on right side */
-      background: #f9f9f9;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease;
-      z-index: 1000;
-      overflow-y: auto;
-    }
+  .sidebar {
+    position: absolute;
+    top: 0; right: 0;
+    width: 350px; height: 100%;
+    padding: 20px; padding-right: 3em;
+    background: #f9f9f9;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .sidebar.collapsed { transform: translateX(310px); padding: 0; }
 
-    .sidebar.collapsed {
-      transform: translateX(310px); /* keep 40px visible */
-      padding: 0;
-    }
+  .collapse-btn {
+    position: absolute; top: 0; right: 0;
+    width: 40px; height: 100%;
+    background: #ddd; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    font-weight: bold; user-select: none;
+    border-radius: 6px 0 0 6px; z-index: 1100;
+  }
+  .collapse-btn .triangle {
+    display: inline-block; margin-left: 5px;
+    transform: rotate(270deg); transition: transform 0.3s;
+  }
+  .sidebar.collapsed + .collapse-btn .triangle { transform: rotate(90deg); }
 
-    /* Collapse button */
-    .collapse-btn {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 40px;
-      height: 100%;
-      background: #ddd;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      font-weight: bold;
-      user-select: none;
-      border-radius: 6px 0 0 6px;
-      z-index: 1100;
-    }
-    .collapse-btn .triangle {
-      display: inline-block;
-      margin-left: 5px;
-      transform: rotate(270deg);
-      transition: transform 0.3s;
-    }
-    .sidebar.collapsed + .collapse-btn .triangle {
-      transform: rotate(90deg);
-    }
+  h1 { font-size: 1.6em; margin-top: 0; }
+  h2 { font-size: 1.1em; font-weight: 400; font-style: italic; color: #444; margin: 0 0 1em; }
+  h3 { margin-top: 1.2em; font-size: 1.05em; color: #222; }
+  p { font-size: 0.95em; margin-bottom: 1em; }
 
-    h1 {
-      font-size: 1.6em;
-      margin-top: 0;
-    }
-    h2 {
-      font-size: 1.1em;
-      font-weight: 400;
-      font-style: italic;
-      color: #444;
-      margin-top: 0;
-      margin-bottom: 1em;
-    }
-    h3 {
-      margin-top: 1.2em;
-      font-size: 1.05em;
-      color: #222;
-    }
-    p {
-      font-size: 0.95em;
-      margin-bottom: 1em;
-    }
+  .opacity-control {
+    position: absolute; bottom: 20px; left: 20px;
+    background: rgba(255,255,255,0.9);
+    padding: 6px 10px; border-radius: 6px;
+    font-family: 'Latin Modern Roman', 'Times New Roman', serif;
+    font-size: 13px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    z-index: 1500;
+  }
+  .opacity-control input { width: 120px; }
 
-    .opacity-control {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.9);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-family: 'Latin Modern Roman', 'Times New Roman', serif;
-      font-size: 13px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.3);
-      z-index: 1500;
-    }
-    .opacity-control input {
-      width: 120px;
-    }
-
-    /* Colorbar legend */
-    .info.legend {
-      background: white;
-      padding: 8px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.2);
-      font-size: 13px;
-    }
-    .legend-scale {
-      display: flex;
-      align-items: center;
-      flex-direction: row;  /* left-to-right layout */
-    }
-    .legend-title {
-      writing-mode: vertical-rl;
-      transform: rotate(180deg); /* makes text read bottom→top */
-      text-align: center;
-      margin-right: 8px;
-      font-weight: bold;
-    }
-    .colorbar {
-      width: 18px;
-      height: 150px;
-      background: linear-gradient(to top, #ca0020, #f7f7f7, #0571b0); /* subtle RdBu */
-      border: 1px solid #999;
-    }
-    .legend-labels {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 150px;
-      margin-left: 6px;
-    }
-  </style>
+  .info.legend {
+    background: white; padding: 8px; border-radius: 8px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.2);
+    font-size: 13px;
+  }
+  .legend-scale { display: flex; align-items: center; flex-direction: row; }
+  .legend-title {
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    text-align: center; margin-right: 8px; font-weight: bold;
+  }
+  .colorbar {
+    width: 18px; height: 150px;
+    background: linear-gradient(to top, #ca0020, #f7f7f7, #0571b0);
+    border: 1px solid #999;
+  }
+  .legend-labels {
+    display: flex; flex-direction: column; justify-content: space-between;
+    height: 150px; margin-left: 6px;
+  }
+</style>
 </head>
 <body>
 
-  <div id="map"></div>
+<div id="map"></div>
 
-  <div class="sidebar" id="sidebar">
-    <h1>Topographic changes following the Eaton Fire, Los Angeles</h1>
+<div class="sidebar" id="sidebar">
+  <h1>Topographic changes following the Eaton Fire, Los Angeles</h1>
     <h2>Constraints on post-fire sediment mobilization from repeat airborne lidar.</h2>
 
     <h3>Contact</h3>
@@ -218,120 +153,98 @@
     
   </div>
 
-  <!-- Collapse vertical bar -->
-  <div class="collapse-btn" id="collapseBtn">Data source & details   <span class="triangle"> ▼ </span></div>
+  <!-- Collapse vertical bar -->  
+<div class="collapse-btn" id="collapseBtn">Data source & details <span class="triangle"> ▼ </span></div>
 
-  <!-- Opacity slider -->
-  <div class="opacity-control">
-    <label for="opacityRange">Overlay opacity:</label><br>
-    <input type="range" id="opacityRange" min="0" max="100" value="100">
-  </div>
+<div class="opacity-control">
+  <label for="opacityRange">Overlay opacity:</label><br>
+  <input type="range" id="opacityRange" min="0" max="100" value="100">
+</div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  var map = L.map('map', { zoomControl: true, attributionControl: true });
 
-  <script>
-    var map = L.map('map', { zoomControl: true, attributionControl: true });
+  var googleSat = L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    { maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'],
+      attribution: '&copy; <a href="https://www.google.com/earth/">Google Satellite</a>' }
+  ).addTo(map);
 
-    var googleSat = L.tileLayer(
-      'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-      {
-        maxZoom: 20,
-        subdomains: ['mt0','mt1','mt2','mt3'],
-        attribution: '&copy; <a href="https://www.google.com/earth/">Google</a>'
-      }
-    ).addTo(map);
+  var hillshade = L.tileLayer('hillshade/{z}/{x}/{y}.png', {
+    minZoom: 0, maxZoom: 20, maxNativeZoom: 18, opacity: 1,
+    attribution: '© Emily Geyman'
+  });
 
-    // Hillshade layer (initially OFF, below lidar)
-    var hillshade = L.tileLayer('hillshade/{z}/{x}/{y}.png', {
-      minZoom: 0, maxZoom: 20, maxNativeZoom: 18, opacity: 1,
-      attribution: '© Hillshade'
-    });
+  var lidarCB = L.tileLayer('lidar_dz_CB/{z}/{x}/{y}.png', {
+    minZoom: 0, maxZoom: 20, maxNativeZoom: 17, opacity: 1,
+    attribution: '© Emily Geyman'
+  }).addTo(map);
 
-    var lidarCB = L.tileLayer('lidar_dz_CB/{z}/{x}/{y}.png', {
-      minZoom: 0, maxZoom: 20, maxNativeZoom: 17, opacity: 1,
-      attribution: '© Emily Geyman'
-    }).addTo(map);
+  var lidarBA = L.tileLayer('lidar_dz_BA/{z}/{x}/{y}.png', {
+    minZoom: 0, maxZoom: 20, maxNativeZoom: 17, opacity: 1,
+    attribution: '© Emily Geyman'
+  });
 
-    var lidarBA = L.tileLayer('lidar_dz_BA/{z}/{x}/{y}.png', {
-      minZoom: 0, maxZoom: 20, maxNativeZoom: 17, opacity: 1,
-      attribution: '© Emily Geyman'
-    });
+  lidarBA.on('add', () => lidarBA.bringToFront());
+  lidarCB.on('add', () => lidarCB.bringToFront());
 
-    // Ensure lidar layers are always on top of hillshade
-    lidarBA.on('add', function() { lidarBA.bringToFront(); });
-    lidarCB.on('add', function() { lidarCB.bringToFront(); });
+  var baseMaps = {
+    "Pre-fire to post-fire": lidarBA,
+    "Post-fire to post-storm": lidarCB,
+    "Hillshade only": hillshade
+  };
 
-    var overlays = {
-      "Pre-fire to post-fire": lidarBA,
-      "Post-fire to post-storm": lidarCB,
-      "Hillshade only": hillshade
-    };
+  var layerControl = L.control.layers(baseMaps, {}, { collapsed: false, position: 'topleft' }).addTo(map);
 
-    var baseMaps = { "Google Satellite": googleSat };
-    L.control.layers(baseMaps, overlays, { collapsed: false, position: 'topleft' }).addTo(map);
+  var layerControlContainer = layerControl.getContainer();
+  var title = document.createElement("div");
+  title.innerHTML = "<b>Airborne lidar datasets</b>";
+  title.style.marginBottom = "4px";
+  layerControlContainer.insertBefore(title, layerControlContainer.firstChild);
 
-    // EPSG:3857 bounds (xmin, ymin, xmax, ymax)
-    var xmin = -13154725.5859,
-        ymin = 4049146.1307,
-        xmax = -13129637.2445,
-        ymax = 4065167.0671;
+  var xmin = -13154725.5859, ymin = 4049146.1307,
+      xmax = -13129637.2445, ymax = 4065167.0671;
+  var southWest = L.CRS.EPSG3857.unproject(L.point(xmin, ymin));
+  var northEast = L.CRS.EPSG3857.unproject(L.point(xmax, ymax));
+  map.fitBounds(L.latLngBounds(southWest, northEast));
 
-    // Convert back to lat/lon (EPSG:4326)
-    var southWest = L.CRS.EPSG3857.unproject(L.point(xmin, ymin));
-    var northEast = L.CRS.EPSG3857.unproject(L.point(xmax, ymax));
-    var bounds = L.latLngBounds(southWest, northEast);
-    map.fitBounds(bounds);
+  // === Opacity control ===
+  var activeOverlay = lidarCB;
+  document.getElementById('opacityRange').value = Math.round(activeOverlay.options.opacity*100);
 
-    // Opacity control
-    var activeOverlay = lidarCB;
-    document.getElementById('opacityRange').value = Math.round(activeOverlay.options.opacity*100);
+  document.getElementById('opacityRange').addEventListener('input', function() {
+    if (activeOverlay) activeOverlay.setOpacity(this.value/100);
+  });
 
-    document.getElementById('opacityRange').addEventListener('input', function() {
-      if (activeOverlay) {
-        var val = this.value / 100;
-        activeOverlay.setOpacity(val);
-      }
-    });
+  // Listen for base layer change instead of overlayadd/remove
+  map.on('baselayerchange', function(e) {
+    activeOverlay = e.layer;
+    document.getElementById('opacityRange').value = Math.round((activeOverlay.options.opacity || 1)*100);
+    if (e.layer === lidarBA) lidarBA.bringToFront();
+    if (e.layer === lidarCB) lidarCB.bringToFront();
+  });
 
-    map.on('overlayadd', function(e) {
-      activeOverlay = e.layer;
-      document.getElementById('opacityRange').value = Math.round((activeOverlay.options.opacity || 1)*100);
-      if (e.layer === lidarBA) lidarBA.bringToFront();
-      if (e.layer === lidarCB) lidarCB.bringToFront();
-    });
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('collapseBtn').addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+  });
 
-    map.on('overlayremove', function(e) {
-      if (activeOverlay === e.layer) activeOverlay = null;
-    });
-
-    // Sidebar collapse
-    const sidebar = document.getElementById('sidebar');
-    const collapseBtn = document.getElementById('collapseBtn');
-    collapseBtn.addEventListener('click', function() {
-      sidebar.classList.toggle('collapsed');
-    });
-
-    // === Add colorbar legend ===
-    var colorbar = L.control({position: 'topleft'});
-    colorbar.onAdd = function (map) {
-      var div = L.DomUtil.create('div', 'info legend');
-      div.innerHTML =
-        '<div class="legend-scale">' +
-          '<div class="legend-title">Surface elevation change [m]</div>' +
-          '<div class="colorbar"></div>' +
-          '<div class="legend-labels">' +
-            '<div>+3</div>' +
-            '<div>0</div>' +
-            '<div>-3</div>' +
-          '</div>' +
-        '</div>';
-      return div;
-    };
-    colorbar.addTo(map);
-  </script>
+  var colorbar = L.control({position: 'topleft'});
+  colorbar.onAdd = function () {
+    var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML =
+      '<div class="legend-scale">' +
+        '<div class="legend-title">Surface elevation change [m]</div>' +
+        '<div class="colorbar"></div>' +
+        '<div class="legend-labels">' +
+          '<div>+3</div><div>0</div><div>-3</div>' +
+        '</div>' +
+      '</div>';
+    return div;
+  };
+  colorbar.addTo(map);
+</script>
 </body>
 </html>
-
-
 
